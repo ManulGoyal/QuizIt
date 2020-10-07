@@ -15,3 +15,23 @@
 5. Open 'quiz_it' folder as a flutter project in Android Studio and run the app.
 
 6. If running on Android Virtual Device, type in the IP 'ws://10.0.2.2:1337' and any username you wish, and click 'Connect'.
+
+## Instructions
+
+In order to ensure consistency, whenever a message is passed from the server to client or vice-versa, please pass it as a UTF-8 string-encoded JSON object with the following fields:
+
+```
+{
+    type: "<the type of message>"
+    message: "<the actual message, can be another string-encoded JSON>"
+}
+```
+
+Also, whenever some API is exposed (i.e., an event handler is written in backend to handle a message from the client), please document it in the next section.
+
+## API
+
+| Message from Client   | Response from Server | Purpose |
+| --------------------- | ----------------- | -------------------- |
+| `{type: 'username', message: '<username>'}` | `{type: 'username', message: 'success|failure'}` | Register the name of the user with the server while connecting. Returns failure if username is already taken. | 
+
