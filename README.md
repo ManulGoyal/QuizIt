@@ -28,6 +28,13 @@ In order to ensure consistency, whenever a message is passed from the server to 
 ```
 
 Also, whenever some API is exposed (i.e., an event handler is written in backend to handle a message from the client), please document it in the next section.
+To attach an event handler on the client side use (here `connection` is a `WebSocketConnection` object):
+```
+connection.addListener('<type of message>', (msg) {
+    // do something with the String msg, which contains the value
+    // of the 'message' field in the JSON object recieved from server 
+});
+```
 
 ## API
 
