@@ -33,5 +33,5 @@ Also, whenever some API is exposed (i.e., an event handler is written in backend
 
 | Message from Client   | Response from Server | Purpose |
 | --------------------- | ----------------- | -------------------- |
-| `{type: 'username', message: '<username>'}` | `{type: 'username', message: 'success|failure'}` | Register the name of the user with the server while connecting. Returns failure if username is already taken. | 
+| `{type: 'username', message: '<username>'}` | `{type: 'username', message: 'success\|failure'}` | Register the name of the user with the server while connecting. Returns failure if username is already taken. | 
 
