@@ -1,10 +1,20 @@
+/* This file defines the first page the user sees, and it allows the user to
+ * connect to an IP address and simultaneously choose a username, which will be
+ * visible to the other users on the network.
+ */
+
 import 'package:flutter/material.dart';
 import 'web_socket_connection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'utilities.dart';
 
+/* The connection object defined below is an instance of the custom class
+ * WebSocketConnection, and is used to handle the websocket connection,
+ * including adding event listeners.
+ */
 final WebSocketConnection connection = new WebSocketConnection();
 
+/* A custom TextField used in the ConnectionPage */
 class CustomTextField extends StatelessWidget {
   final String hintText;
   final IconData icon;
@@ -55,6 +65,7 @@ class CustomTextField extends StatelessWidget {
   }
 }
 
+/* The main widget which defines the connection page that the user sees */
 class ConnectionPage extends StatefulWidget {
   @override
   _ConnectionPageState createState() => _ConnectionPageState();
