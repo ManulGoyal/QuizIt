@@ -4,66 +4,16 @@
  */
 
 import 'package:flutter/material.dart';
-import 'web_socket_connection.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'utilities.dart';
+import 'package:quizit/room_management_page.dart';
+import 'package:quizit/web_socket_connection.dart';
+import 'package:quizit/utilities.dart';
+import 'package:quizit/custom_widgets.dart';
 
 /* The connection object defined below is an instance of the custom class
  * WebSocketConnection, and is used to handle the websocket connection,
  * including adding event listeners.
  */
 final WebSocketConnection connection = new WebSocketConnection();
-
-/* A custom TextField used in the ConnectionPage */
-class CustomTextField extends StatelessWidget {
-  final String hintText;
-  final IconData icon;
-  final TextEditingController controller;
-  CustomTextField(
-      {@required this.hintText,
-      @required this.icon,
-      @required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        this.icon,
-        color: Colors.white,
-        size: 30,
-      ),
-      title: TextField(
-        controller: this.controller,
-        decoration: new InputDecoration(
-          enabledBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(20.0),
-            ),
-            borderSide: BorderSide(
-              color: Colors.white,
-              width: 1,
-            ),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(20.0),
-            ),
-            borderSide: BorderSide(
-              color: Colors.white,
-              width: 1,
-            ),
-          ),
-          filled: true,
-          hintStyle: TextStyle(color: Colors.white),
-          hintText: this.hintText,
-        ),
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
 
 /* The main widget which defines the connection page that the user sees */
 class ConnectionPage extends StatefulWidget {
@@ -89,6 +39,12 @@ class _ConnectionPageState extends State<ConnectionPage> {
     connection.addListener('username', (msg) {
       if (msg == 'success') {
         showToast('Successfully connected to $ip');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RoomManagementPage(connection: connection),
+          ),
+        );
       } else {
         showToast('Username $name already taken');
       }
@@ -126,7 +82,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
                 ),
                 CustomTextField(
                   hintText: "Server IP",
-                  icon: Icons.web,
+                  icon: Icons.language,
                   controller: _ipController,
                 ),
                 SizedBox(

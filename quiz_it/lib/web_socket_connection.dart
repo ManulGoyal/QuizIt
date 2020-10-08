@@ -38,7 +38,7 @@ class WebSocketConnection {
   }
 
   /* This function is used to send a message, which is handled by the server. */
-  void sendMessage(String type, String message) {
+  void sendMessage(String type, dynamic message) {
     channel?.sink?.add(jsonEncode({'type': type, 'message': message}));
   }
 }
