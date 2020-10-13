@@ -28,8 +28,8 @@ class _ConnectionPageState extends State<ConnectionPage> {
   void connectToServer() {
     String ip = _ipController.text;
     String name = _nameController.text;
-    connection.connect(ip, () {
-      showToast("Invalid IP address");
+    connection.connect(ip, (String error) {
+      showToast(error);
     });
     connection.addListener('status', (msg) {
       if (msg == 'failure') {
@@ -37,16 +37,21 @@ class _ConnectionPageState extends State<ConnectionPage> {
       }
     });
     connection.addListener('username', (msg) {
-      if (msg == 'success') {
+      if (msg['status'] == 'success') {
+        connection.user = new User(
+          userId: msg['userId'],
+          username: name,
+        );
         showToast('Successfully connected to $ip');
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => RoomManagementPage(connection: connection),
+            maintainState: false,
           ),
         );
       } else {
-        showToast('Username $name already taken');
+        showToast(msg['error']);
       }
     });
     connection.sendMessage('username', name);
@@ -96,19 +101,9 @@ class _ConnectionPageState extends State<ConnectionPage> {
                 SizedBox(
                   height: 20,
                 ),
-                RaisedButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                      side: BorderSide(color: Colors.white)),
+                CustomButton(
+                  text: 'Connect',
                   onPressed: connectToServer,
-                  color: Colors.transparent,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Text(
-                      'Connect',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
-                  ),
                 ),
               ],
             ),

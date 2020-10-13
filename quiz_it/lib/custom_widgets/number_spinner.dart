@@ -42,7 +42,6 @@ class NumberSpinner extends StatelessWidget {
           Container(
             width: 50,
             child: RawMaterialButton(
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onPressed: () {
                 onChange(value >= maxValue ? maxValue : value + 1);
               },

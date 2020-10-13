@@ -3,17 +3,59 @@ export const User = class {
         this.userId = -1;
         this.username = username;
         this.wsConnection = wsConnection;
+        this.room = null;
     }
 }
 
 export const Room = class {
-    constructor(name, code, access, maxSize, participants) {
+    constructor(name, code, access, maxSize, host, participants) {
         this.id = -1;
         this.name = name;
         this.code = code;
         this.access = access;
         this.maxSize = maxSize;
+        this.host = host;
         this.participants = participants;
+    }
+    isUserPresent(userId) {
+        console.log(this.participants);
+        console.log(userId);
+        console.log(userId in this.participants);
+        return this.participants.includes(userId);
+    }
+    isFull() {
+        return this.participants.length >= this.maxSize;
+    }
+    addParticipant(userId) {
+        console.log(Users.users);
+        if(!(userId in Users.users)) {
+            console.log(User.users);
+            console.log("here3");
+            return false;
+        }
+        if(this.isFull()) {
+            console.log('here4');
+            return false;
+        }
+        if(this.isUserPresent(userId)) {
+            console.log(userId);
+            console.log('here5');
+            return false;
+        }
+        this.participants.push(userId);
+        return true;
+    }
+    getParticipants() {
+        var participants = [];
+        this.participants.forEach(function (userId) {
+            var user = Users.getById(userId);
+            // console.log(userId);
+            // console.log(user);
+            if(user) {
+                participants.push({userId: user.userId, username: user.username});
+            }
+        });
+        return participants;
     }
 }
 
@@ -28,6 +70,13 @@ export const Users = class {
         }
         return usersList;
     }
+
+    static getById(userId) {
+        if(userId in this.users) {
+            return this.users[userId];
+        }
+        return null;
+    } 
 
     static checkNameAvailability(name) {
         for(var id in this.users) {
@@ -47,10 +96,10 @@ export const Users = class {
         }
         return false;
     }
-    static removeUser(user) {
-        if(user === undefined) return false;
-        if(user.userId in this.users) {
-            delete this.users[user.userId];
+    static removeUser(userId) {
+        // if(user === undefined) return false;
+        if(userId in this.users) {
+            delete this.users[userId];
             return true;
         }
         return false;
@@ -77,6 +126,22 @@ export const Rooms = class {
         return roomsList;
     }
 
+    static getById(id) {
+        if(id in this.rooms) {
+            return this.rooms[id];
+        }
+        return null;
+    }
+
+    static getByCode(code) {
+        for(var id in this.rooms) {
+            if(this.rooms[id].code == code) {
+                return this.rooms[id];
+            }
+        }
+        return null;
+    }
+
     static checkNameAvailability(name) {
         for(var id in this.rooms) {
             if(this.rooms[id].name === name) {
@@ -95,25 +160,52 @@ export const Rooms = class {
         }
         return false;
     }
-    static removeRoom(room) {
-        if(room === undefined) return false;
-        if(room.id in this.rooms) {
-            delete this.rooms[room.id];
+    static removeRoom(roomId) {
+        // if(room === undefined) return false;
+        if(roomId in this.rooms) {
+            delete this.rooms[roomId];
             return true;
         }
         return false;
     }
-    static removeUserFromRoom(user) {
-        for(var id in this.rooms) {
-            var room = this.rooms[id];
-            var index = room.participants.indexOf(user.userId);
+    static isRoomFull(roomId) {
+        var room = this.getById(roomId);
+        if(room) {
+            return room.isFull();
+        }
+        return false;
+    }
+    static isUserInRoom(userId, roomId) {
+        if(!(roomId in this.rooms) || !(userId in Users.users)) return false;
+        return this.rooms[roomId].isUserPresent(userId);
+    }
+    static addUserToRoom(userId, roomId) {
+        var room = this.getById(roomId);
+        console.log(room);
+        if(room) {
+            return room.addParticipant(userId);
+        }
+        return false;
+    }
+    static removeUserFromRoom(userId, roomId) {
+        var room = this.getById(roomId);
+        if(room) {
+            var index = room.participants.indexOf(userId);
             if(index > -1) {
                 room.participants.splice(index, 1);
-            }
-            if(room.participants.length === 0) {
-                this.removeRoom(room);
+                if(room.host === userId || room.participants.length === 0) {
+                    room.participants.forEach(function (userId) {
+                        var user = Users.getById(userId);
+                        if(user) {
+                            user.room = null;
+                        }
+                    });
+                    this.removeRoom(room.id);
+                }
+                return true;
             }
         }
+        return false;
     }
 }
  

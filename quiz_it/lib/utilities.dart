@@ -2,6 +2,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:quizit/connection_page.dart';
+
+final List<Color> customBlue = [
+  Color(0xFF757190),
+  Color(0xFF3B3850),
+  Color(0xFF23212E),
+  Color(0xFF16141C)
+];
+final Color limeYellow = Color(0xFFFFF34F);
+
 /* A utility function to conveniently show toasts. */
 void showToast(String message) {
   Fluttertoast.showToast(
@@ -38,6 +48,7 @@ class Room {
   String code;
   RoomAccess access;
   int maxSize;
+  int host;
   List<int> participants;
 
   Room(
@@ -46,6 +57,7 @@ class Room {
       @required this.code,
       @required this.access,
       @required this.maxSize,
+      @required this.host,
       @required this.participants});
   factory Room.fromJSON(Map<String, dynamic> room) {
     return Room(
@@ -56,6 +68,7 @@ class Room {
             ? RoomAccess.PRIVATE
             : RoomAccess.PUBLIC,
         maxSize: room['maxSize'],
+        host: room['host'],
         participants: room['participants'].cast<int>());
   }
 }

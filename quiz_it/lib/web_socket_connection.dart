@@ -5,9 +5,11 @@
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
+import 'package:quizit/utilities.dart';
 
 class WebSocketConnection {
   WebSocketChannel channel;
+  User user;
   Map<String, Function> eventListener = new Map<String, Function>();
 
   /* This function is used to connect to the given IP address. Any previous
@@ -28,7 +30,7 @@ class WebSocketConnection {
       });
     } catch (e) {
       print(e);
-      handleException();
+      handleException('Invalid IP address');
     }
   }
 
