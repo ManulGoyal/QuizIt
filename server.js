@@ -7,11 +7,18 @@ import {User, Room, Users, Rooms, WebSocketConnection, randomString} from './uti
 // Rooms.addRoom(new Room('room1', 'fn9f', 'private', 9, 0, [0, 1, 2]));
 // Rooms.addRoom(new Room('room2', 'dlkn8', 'public', 8, 1, [3, 4]));
 
+var port = process.env.PORT;
+if (port == null || port == "") {
+  port = 8000;
+}
+
 var server = http.createServer(function(request, response) {
   // process HTTP request. Since we're writing just WebSockets
   // server we don't have to implement anything.
 });
-server.listen(1337, function() { });
+server.listen(port, function() {
+  console.log('Listening on port ' + port);
+});
 
 // create the server
 var wsServer = new WebSocketServer({

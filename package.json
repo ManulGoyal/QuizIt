@@ -1,3 +1,31 @@
 {
-    "type": "module"
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "quizit",
+  "description": "QuizIt WebSocket server-side",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "websocket": "^1.0.32"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ManulGoyal/QuizIt.git"
+  },
+  "keywords": [
+    "\"quizit\"",
+    "\"heroku\""
+  ],
+  "engines": {
+    "node": "12.x"
+  },
+  "author": "\"ManulGoyal\"",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ManulGoyal/QuizIt/issues"
+  },
+  "homepage": "https://github.com/ManulGoyal/QuizIt#readme"
 }
