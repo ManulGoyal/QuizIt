@@ -79,8 +79,8 @@ wsServer.on('request', function(request) {
       console.log('here1');
       wsConnection.sendMessage('add_to_room', {status: 'failure', error: 'Cannot join more than one room'});
     } else {
-      if(Rooms.addUserToRoom(user.userId, message.roomId)) {
-        user.room = Rooms.getById(message.roomId);
+      if(Rooms.addUserToRoom(user.userId, message)) {
+        user.room = Rooms.getById(message);
         wsConnection.sendMessage('add_to_room', {status: 'success'});
         Users.broadcastMessage('update_rooms', null);
       } else {
@@ -118,11 +118,11 @@ wsServer.on('request', function(request) {
       wsConnection.sendMessage('remove_user_from_room', {status: 'failure', error: 'User not in any room'});
     } else if (user.room.host !== user.userId) {
       wsConnection.sendMessage('remove_user_from_room', {status: 'failure', error: 'User is not host'});
-    } else if (user.room.host === message.userId) {
+    } else if (user.room.host === message) {
       wsConnection.sendMessage('remove_user_from_room', {status: 'failure', error: 'Host can\'t remove himself'});
     } else {
-      if(Rooms.removeUserFromRoom(message.userId, user.room.id)) {
-        var userToRemove = Users.getById(message.userId);
+      if(Rooms.removeUserFromRoom(message, user.room.id)) {
+        var userToRemove = Users.getById(message);
         wsConnection.sendMessage('remove_user_from_room', {status: 'success'});
         userToRemove.wsConnection.sendMessage('remove_from_room', {status: 'success', origin: 'host'});
         userToRemove.room = null;

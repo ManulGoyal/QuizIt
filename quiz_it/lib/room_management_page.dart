@@ -81,7 +81,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   }
 
   void addToRoom(BuildContext context, Room room, {bool usingCode = false}) {
-    widget.connection.sendMessage('add_to_room', {'roomId': room.id});
+    widget.connection.sendMessage('add_to_room', room.id);
     widget.connection.addListener('add_to_room', (msg) {
       print(msg);
       print("context: ");

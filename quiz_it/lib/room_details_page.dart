@@ -113,8 +113,8 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
       if (room.host == widget.connection.user.userId) {
         return GestureDetector(
           onTap: () {
-            widget.connection.sendMessage('remove_user_from_room',
-                {'userId': participants[index].userId});
+            widget.connection.sendMessage(
+                'remove_user_from_room', participants[index].userId);
           },
           child: Icon(Icons.close),
         );
