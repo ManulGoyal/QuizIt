@@ -3,6 +3,7 @@ const require = createRequire(import.meta.url);
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 import {User, Room, Users, Rooms, WebSocketConnection, randomString} from './utils.js';
+import {Quiz, QuizQuestion} from './quiz_utils.js';
 
 // Rooms.addRoom(new Room('room1', 'fn9f', 'private', 9, 0, [0, 1, 2]));
 // Rooms.addRoom(new Room('room2', 'dlkn8', 'public', 8, 1, [3, 4]));
@@ -53,7 +54,7 @@ wsServer.on('request', function(request) {
     // console.log(room);
     // console.log(room.getParticipants());
     if(room) {
-      wsConnection.sendMessage('get_room_by_id', {status: 'success', room: room, participants: room.getParticipants()});
+      wsConnection.sendMessage('get_room_by_id', {status: 'success', room: room.getQuizlessJSON(), participants: room.getParticipants()});
     } else {
       wsConnection.sendMessage('get_room_by_id', {status: 'failure', error: 'Room id doesn\'t exist'});
     }
@@ -145,8 +146,31 @@ wsServer.on('request', function(request) {
     }
   });
 
-  // This is the most important callback for us, we'll handle
-  // all messages from users here.
+  wsConnection.addListener('get_quiz', function (message) {
+    // message should be room_id
+    var room = Rooms.getById(message);
+
+    if(room) {
+      wsConnection.sendMessage('get_quiz', {status: 'success', quiz: room.quiz});
+    } else {
+      wsConnection.sendMessage('get_quiz', {status: 'failure', error: 'Room with given ID does not exist'});
+    }
+  });
+
+  wsConnection.addListener('update_quiz', function(message) {
+    console.log(message);
+    // message should be a Quiz object
+    // the whole quiz is updated at once
+    if(user.room.host !== user.userId) {
+      wsConnection.sendMessage('update_quiz', {status: 'failure', error: 'User is not host'});
+    } else {
+      user.room.quiz = Quiz.fromJSON(message);
+      wsConnection.sendMessage('update_quiz', {status: 'success'});
+      Users.broadcastMessage('update_rooms', null);
+    }
+  });
+
+  // This is wrapper method which directs an incoming message to the proper callback
   connection.on('message', function(message) {
     if(message.type === 'utf8') {
         var msgData = JSON.parse(message.utf8Data);

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:quizit/quiz_management.dart';
 import 'package:quizit/utilities.dart';
 import 'package:quizit/web_socket_connection.dart';
 import 'custom_widgets.dart';
@@ -13,6 +14,10 @@ final String privateRoomDescription =
 class RoomDetailsPage extends StatefulWidget {
   final int roomId;
   final WebSocketConnection connection;
+  final List<PopupMenuChoice> choices = [
+    PopupMenuChoice(0, Icon(Icons.edit), "Create/modify quiz"),
+    PopupMenuChoice(1, Icon(Icons.play_arrow), "Start quiz")
+  ];
 
   RoomDetailsPage({@required this.connection, @required this.roomId});
 
@@ -340,6 +345,24 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
                   ),
                 ),
               ),
+              fab: true,
+              choices: widget.choices,
+              onSelected: (choice) {
+                switch (choice.choiceId) {
+                  case 0:
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => QuizManagement(
+                                  connection: widget.connection,
+                                  roomId: widget.roomId,
+                                )));
+//            refreshRoomList();
+                    break;
+                  case 1:
+                    break;
+                }
+              },
             ),
           );
   }

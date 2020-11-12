@@ -1,3 +1,5 @@
+import {Quiz, QuizQuestion} from './quiz_utils.js';
+
 export const User = class {
     constructor(username, wsConnection) {
         this.userId = -1;
@@ -16,6 +18,7 @@ export const Room = class {
         this.maxSize = maxSize;
         this.host = host;
         this.participants = participants;
+        this.quiz = new Quiz('NA');   // the quiz associated with this room, a Quiz class object
     }
     isUserPresent(userId) {
         console.log(this.participants);
@@ -56,6 +59,17 @@ export const Room = class {
             }
         });
         return participants;
+    }
+
+    // returns the JSON representation of the Room object, without the quiz questions
+    // associated with the Room, useful for room management screen on client-side
+    getQuizlessJSON() {
+        var {quiz, ...roomQuizless} = this;
+        return {
+            ...roomQuizless,
+            quiz_topic: this.quiz.topic,
+            quiz_length: this.quiz.getNumberOfQuestions
+        };
     }
 }
 

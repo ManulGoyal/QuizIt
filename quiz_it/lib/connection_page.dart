@@ -22,8 +22,11 @@ class ConnectionPage extends StatefulWidget {
 }
 
 class _ConnectionPageState extends State<ConnectionPage> {
-  TextEditingController _ipController = new TextEditingController();
-  TextEditingController _nameController = new TextEditingController();
+  // TODO: remove defaults
+  TextEditingController _ipController =
+      new TextEditingController(text: 'ws://10.0.2.2:8000');
+  TextEditingController _nameController =
+      new TextEditingController(text: 'manul');
 
   void connectToServer() {
     String ip = _ipController.text;

@@ -50,6 +50,8 @@ class Room {
   int maxSize;
   int host;
   List<int> participants;
+  String quizTopic;
+  int quizLength;
 
   Room(
       {@required this.id,
@@ -58,7 +60,10 @@ class Room {
       @required this.access,
       @required this.maxSize,
       @required this.host,
-      @required this.participants});
+      @required this.participants,
+      @required this.quizTopic,
+      @required this.quizLength});
+
   factory Room.fromJSON(Map<String, dynamic> room) {
     return Room(
         id: room['id'],
@@ -69,6 +74,69 @@ class Room {
             : RoomAccess.PUBLIC,
         maxSize: room['maxSize'],
         host: room['host'],
-        participants: room['participants'].cast<int>());
+        participants: room['participants'].cast<int>(),
+        quizTopic: room['quiz_topic'],
+        quizLength: room['quiz_length']);
+  }
+}
+
+class QuizQuestion {
+  String statement;
+  String imageUrl;
+  List<String> choices;
+
+  QuizQuestion(
+      {@required this.statement,
+      @required this.imageUrl,
+      @required this.choices});
+
+  factory QuizQuestion.fromJSON(Map<String, dynamic> question) {
+    return QuizQuestion(
+        statement: question['statement'],
+        imageUrl: question['imageUrl'],
+        choices: question['choices'].cast<String>());
+  }
+
+  @override
+  String toString() {
+    return 'Statement: ${this.statement}, image: ${this.imageUrl}, choices: ${this.choices}';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'statement': this.statement,
+      'image_url': this.imageUrl,
+      'choices': this.choices,
+    };
+  }
+}
+
+class Quiz {
+  String topic;
+  List<QuizQuestion> questions = new List<QuizQuestion>();
+
+  Quiz();
+
+  factory Quiz.fromJSON(Map<String, dynamic> quizJson) {
+    List<dynamic> questions = quizJson['questions'];
+    Quiz quiz = new Quiz();
+    quiz.topic = quizJson['topic'];
+    questions.forEach((question) {
+      quiz.questions.add(QuizQuestion.fromJSON(question));
+    });
+
+    return quiz;
+  }
+
+  @override
+  String toString() {
+    return 'Topic: ${this.topic}, Questions: ${this.questions.map((e) => e.toString()).toList()}';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'topic': this.topic,
+      'questions': this.questions,
+    };
   }
 }
