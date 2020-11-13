@@ -49,7 +49,7 @@ class _QuizManagementState extends State<QuizManagement> {
   }
 
   Future<void> refreshQuiz() async {
-    widget.connection.sendMessage('get_quiz', widget.roomId);
+    widget.connection.sendMessage('get_quiz', null);
   }
 
   Future<QuizQuestion> showEditQuestionDialog(BuildContext context,

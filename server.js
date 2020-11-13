@@ -147,13 +147,11 @@ wsServer.on('request', function(request) {
   });
 
   wsConnection.addListener('get_quiz', function (message) {
-    // message should be room_id
-    var room = Rooms.getById(message);
 
-    if(room) {
-      wsConnection.sendMessage('get_quiz', {status: 'success', quiz: room.quiz});
+    if(user.room) {
+      wsConnection.sendMessage('get_quiz', {status: 'success', quiz: user.room.quiz});
     } else {
-      wsConnection.sendMessage('get_quiz', {status: 'failure', error: 'Room with given ID does not exist'});
+      wsConnection.sendMessage('get_quiz', {status: 'failure', error: 'User hasn\'t joined any room'});
     }
   });
 
