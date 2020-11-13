@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:quizit/play_quiz.dart';
 import 'package:quizit/quiz_management.dart';
 import 'package:quizit/utilities.dart';
 import 'package:quizit/web_socket_connection.dart';
-import 'custom_widgets.dart';
+import 'package:quizit/custom_widgets.dart';
+import 'package:quizit/question_display.dart';
 import 'dart:async';
 
 final String publicRoomDescription =
@@ -92,6 +94,15 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
     });
     widget.connection.addListener('update_rooms', (msg) {
       refreshRoom();
+    });
+    widget.connection.addListener('start_quiz', (msg) {
+      if (msg['status'] == 'success') {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PlayQuiz(
+                    connection: widget.connection, roomId: widget.roomId)));
+      }
     });
     refreshRoom();
     super.initState();
@@ -345,7 +356,7 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
                   ),
                 ),
               ),
-              fab: true,
+              fab: widget.connection.user.userId == room.host,
               choices: widget.choices,
               onSelected: (choice) {
                 switch (choice.choiceId) {
@@ -360,6 +371,7 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
 //            refreshRoomList();
                     break;
                   case 1:
+                    widget.connection.sendMessage('start_quiz', null);
                     break;
                 }
               },

@@ -3,3 +3,4 @@ test.js
 npm-debug.log
 .DS_Store
 /*.env
+client_server_snippets.txt

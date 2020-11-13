@@ -49,7 +49,6 @@ class _QuizManagementState extends State<QuizManagement> {
         setState(() {
           quiz = Quiz.fromJSON(msg['quiz']);
           _topicController.text = quiz.topic;
-          print(quiz.questions);
         });
       } else {
         print(msg['error']);
@@ -80,12 +79,15 @@ class _QuizManagementState extends State<QuizManagement> {
           TextEditingController _statementController =
               new TextEditingController(
                   text: question == null ? "" : question.statement);
+          TextEditingController _timerController = new TextEditingController(
+              text: question == null ? "" : question.timer.toString());
           List<TextEditingController> _choiceControllers =
               new List<TextEditingController>(4);
           for (int i = 0; i < _choiceControllers.length; i++) {
             _choiceControllers[i] = new TextEditingController(
                 text: question == null ? "" : question.choices[i]);
           }
+          int timer = 30;
           int choiceNumber = question == null ? 0 : question.answer;
           String imageFilename;
           Image image;
@@ -144,6 +146,14 @@ class _QuizManagementState extends State<QuizManagement> {
                               controller: _statementController,
                               hintText: 'Question statement',
                               icon: Icons.text_fields,
+                            ),
+                            SizedBox(
+                              height: 15,
+                            ),
+                            CustomTextField(
+                              hintText: 'Time allotted in seconds',
+                              icon: Icons.timer,
+                              controller: _timerController,
                             ),
                             SizedBox(
                               height: 15,
@@ -300,8 +310,14 @@ class _QuizManagementState extends State<QuizManagement> {
                                     text: 'Save',
                                     onPressed: () async {
                                       bool isEmpty = false;
+                                      var timer =
+                                          int.tryParse(_timerController.text);
                                       if (_statementController.text == "") {
                                         showToast("Statement cannot be empty");
+                                        isEmpty = true;
+                                      } else if (timer == null) {
+                                        showToast(
+                                            "Allotted time must be an integer");
                                         isEmpty = true;
                                       } else {
                                         for (TextEditingController _controller
@@ -342,7 +358,8 @@ class _QuizManagementState extends State<QuizManagement> {
                                                 choices: _choiceControllers
                                                     .map((e) => e.text)
                                                     .toList(),
-                                                answer: choiceNumber));
+                                                answer: choiceNumber,
+                                                timer: timer));
                                       }
                                     },
                                   ),
@@ -514,17 +531,35 @@ class _QuizManagementState extends State<QuizManagement> {
                                           Padding(
                                             padding: const EdgeInsets.only(
                                                 left: 12.0,
+                                                right: 12.0,
                                                 top: 12.0,
                                                 bottom: 12.0),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  'Choices',
-                                                  style: TextStyle(
-                                                      fontFamily: 'Prompt',
-                                                      fontSize: 17),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      'Choices',
+                                                      style: TextStyle(
+                                                          fontFamily: 'Prompt',
+                                                          fontSize: 17),
+                                                    ),
+                                                    Text(
+                                                      'Allotted Time: ${question.timer} s',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Prompt',
+                                                        fontSize: 15,
+                                                        color: Colors.grey,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                                 SizedBox(
                                                   height: 10,

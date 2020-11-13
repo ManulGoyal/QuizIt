@@ -6,8 +6,10 @@
 import 'package:flutter/material.dart';
 import 'package:quizit/room_management_page.dart';
 import 'package:quizit/connection_page.dart';
-
+import 'package:quizit/play_quiz.dart';
 import 'package:quizit/web_socket_connection.dart';
+import 'question_display.dart';
+import 'utilities.dart';
 
 final String title = "QuizIt";
 
@@ -27,6 +29,15 @@ class MyApp extends StatelessWidget {
       initialRoute: '/connection_page',
       routes: {
         '/connection_page': (context) => ConnectionPage(),
+
+        // (context) => QuestionDisplay(
+        // question: QuizQuestion(
+        //     statement: 'manulldsnf jknsfr rkjnflrkjfnl rlkjfnrkjnf',
+        //     imageUrl:
+        //         'https://res.cloudinary.com/quizit/image/upload/v1605202927/samples/landscapes/nature-mountains.jpg',
+        //     choices: ['AAA', 'BBB', 'CCC', 'DDD'],
+        //     answer: 1,
+        //     timer: 45)),
 //        '/room_management_page': (context) =>
 //            RoomManagementPage(connection: con),
       },

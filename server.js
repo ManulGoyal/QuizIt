@@ -168,6 +168,21 @@ wsServer.on('request', function(request) {
     }
   });
 
+  wsConnection.addListener('start_quiz', function (message) {
+    if(user.room) {
+      if(user.room.host == user.userId) {
+        user.room.participants.forEach(participantId => {
+          var participant = Users.getById(participantId);
+          participant.wsConnection.sendMessage('start_quiz', {status: 'success'});
+        });
+      } else {
+        wsConnection.sendMessage('start_quiz', {status: 'failure', error: 'User is not host'});
+      }
+    } else {
+      wsConnection.sendMessage('start_quiz', {status: 'failure', error: 'User is not in any room'});
+    }
+  });
+
   // This is wrapper method which directs an incoming message to the proper callback
   connection.on('message', function(message) {
     if(message.type === 'utf8') {
