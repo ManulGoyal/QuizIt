@@ -4,7 +4,10 @@ import 'package:quizit/utilities.dart';
 import 'package:quizit/web_socket_connection.dart';
 import 'custom_widgets.dart';
 import 'dart:async';
+import 'dart:io';
 import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 
 final cloudinary = CloudinaryPublic('quizit', 'yxld7cc2', cache: false);
 
@@ -24,6 +27,20 @@ class QuizManagement extends StatefulWidget {
 
 class _QuizManagementState extends State<QuizManagement> {
   Quiz quiz;
+//  File _image;
+  final picker = ImagePicker();
+
+//  Future getImage() async {
+//    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+//
+//    setState(() {
+//      if (pickedFile != null) {
+//        _image = File(pickedFile.path);
+//      } else {
+//        print('No image selected.');
+//      }
+//    });
+//  }
 
   @override
   void initState() {
@@ -68,6 +85,25 @@ class _QuizManagementState extends State<QuizManagement> {
             _choiceControllers[i] = new TextEditingController(
                 text: question == null ? "" : question.choices[i]);
           }
+          String imageFilename;
+          Image image;
+          File imageFile;
+
+          if (question == null || question.imageUrl == null) {
+            imageFilename = null;
+            image = null;
+            imageFile = null;
+          } else {
+            imageFilename = basename(question.imageUrl);
+            CloudinaryImage cloudinaryImage =
+                CloudinaryImage(question.imageUrl);
+            image = Image.network(
+                cloudinaryImage.thumbnail(height: 150, width: 150).generate());
+          }
+
+//          cloudinaryImage.thumbnail(width: 150, height: 150).generate();
+//          File _image = question == null || question.imageUrl == null ? null :
+//          String imageFilename = question == null || question.imageUrl == null ? 'none' : basename(question.imageUrl);
           return StatefulBuilder(
             builder: (context, setState) {
               return Dialog(
@@ -109,6 +145,63 @@ class _QuizManagementState extends State<QuizManagement> {
                             SizedBox(
                               height: 15,
                             ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Add/Change Image',
+                                  style: TextStyle(
+                                    fontFamily: 'Prompt',
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                image == null ? Container() : image,
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                Text(
+                                  'Selected: ' +
+                                      (imageFilename == null
+                                          ? 'none'
+                                          : imageFilename),
+                                  style: TextStyle(fontFamily: 'Prompt'),
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                CustomButton(
+                                  text: 'Upload',
+                                  onPressed: () async {
+                                    final pickedFile = await picker.getImage(
+                                        source: ImageSource.gallery);
+
+                                    setState(() {
+                                      if (pickedFile != null) {
+                                        imageFile = File(pickedFile.path);
+                                        image = Image.file(
+                                          imageFile,
+                                          width: 150,
+                                          height: 150,
+                                        );
+                                        imageFilename =
+                                            basename(imageFile.path);
+                                      } else {
+                                        print('No image selected.');
+                                        imageFilename = 'none';
+                                        imageFile = null;
+                                        image = null;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 15,
+                            ),
                             CustomTextField(
                               controller: _choiceControllers[0],
                               hintText: 'Choice 1',
@@ -145,7 +238,7 @@ class _QuizManagementState extends State<QuizManagement> {
                                 children: [
                                   CustomButton(
                                     text: 'Save',
-                                    onPressed: () {
+                                    onPressed: () async {
                                       bool isEmpty = false;
                                       if (_statementController.text == "") {
                                         showToast("Statement cannot be empty");
@@ -162,12 +255,24 @@ class _QuizManagementState extends State<QuizManagement> {
                                         }
                                       }
                                       if (!isEmpty) {
+                                        String responseUrl;
+                                        if (imageFile != null) {
+                                          CloudinaryResponse response =
+                                              await cloudinary.uploadFile(
+                                            CloudinaryFile.fromFile(
+                                                imageFile.path,
+                                                resourceType:
+                                                    CloudinaryResourceType
+                                                        .Image),
+                                          );
+                                          responseUrl = response.secureUrl;
+                                        }
                                         Navigator.pop(
                                             context,
                                             QuizQuestion(
                                                 statement:
                                                     _statementController.text,
-                                                imageUrl: null,
+                                                imageUrl: responseUrl,
                                                 choices: _choiceControllers
                                                     .map((e) => e.text)
                                                     .toList()));
@@ -274,8 +379,8 @@ class _QuizManagementState extends State<QuizManagement> {
 //                              ),
 //                            ),
                                   title: Text(
-                                    question.statement.length > 20
-                                        ? question.statement.substring(0, 20) +
+                                    question.statement.length > 30
+                                        ? question.statement.substring(0, 30) +
                                             "..."
                                         : question.statement,
                                     style: TextStyle(
@@ -284,7 +389,7 @@ class _QuizManagementState extends State<QuizManagement> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    'Image: ${question.imageUrl}',
+                                    'Image: ${question.imageUrl == null ? 'none' : basename(question.imageUrl)}',
                                     style: TextStyle(
                                       color: limeYellow,
                                     ),
