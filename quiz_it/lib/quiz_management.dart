@@ -29,7 +29,7 @@ class _QuizManagementState extends State<QuizManagement> {
   Quiz quiz;
 //  File _image;
   final picker = ImagePicker();
-
+  TextEditingController _topicController = new TextEditingController();
 //  Future getImage() async {
 //    final pickedFile = await picker.getImage(source: ImageSource.gallery);
 //
@@ -48,6 +48,7 @@ class _QuizManagementState extends State<QuizManagement> {
       if (msg['status'] == 'success') {
         setState(() {
           quiz = Quiz.fromJSON(msg['quiz']);
+          _topicController.text = quiz.topic;
           print(quiz.questions);
         });
       } else {
@@ -85,9 +86,11 @@ class _QuizManagementState extends State<QuizManagement> {
             _choiceControllers[i] = new TextEditingController(
                 text: question == null ? "" : question.choices[i]);
           }
+          int choiceNumber = question == null ? 0 : question.answer;
           String imageFilename;
           Image image;
           File imageFile;
+          bool removeImage = false;
 
           if (question == null || question.imageUrl == null) {
             imageFilename = null;
@@ -162,40 +165,57 @@ class _QuizManagementState extends State<QuizManagement> {
                                 SizedBox(
                                   height: 15,
                                 ),
-                                Text(
-                                  'Selected: ' +
-                                      (imageFilename == null
-                                          ? 'none'
-                                          : imageFilename),
-                                  style: TextStyle(fontFamily: 'Prompt'),
-                                ),
-                                SizedBox(
-                                  height: 15,
-                                ),
-                                CustomButton(
-                                  text: 'Upload',
-                                  onPressed: () async {
-                                    final pickedFile = await picker.getImage(
-                                        source: ImageSource.gallery);
+                                image == null
+                                    ? Text(
+                                        'None selected',
+                                        style: TextStyle(fontFamily: 'Prompt'),
+                                      )
+                                    : Container(),
+                                image == null
+                                    ? SizedBox(
+                                        height: 15,
+                                      )
+                                    : Container(),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CustomButton(
+                                      text: image == null ? 'Upload' : 'Change',
+                                      onPressed: () async {
+                                        final pickedFile =
+                                            await picker.getImage(
+                                                source: ImageSource.gallery);
 
-                                    setState(() {
-                                      if (pickedFile != null) {
-                                        imageFile = File(pickedFile.path);
-                                        image = Image.file(
-                                          imageFile,
-                                          width: 150,
-                                          height: 150,
-                                        );
-                                        imageFilename =
-                                            basename(imageFile.path);
-                                      } else {
-                                        print('No image selected.');
-                                        imageFilename = 'none';
-                                        imageFile = null;
-                                        image = null;
-                                      }
-                                    });
-                                  },
+                                        setState(() {
+                                          if (pickedFile != null) {
+                                            imageFile = File(pickedFile.path);
+                                            image = Image.file(
+                                              imageFile,
+                                              width: 150,
+                                              height: 150,
+                                            );
+                                            imageFilename =
+                                                basename(imageFile.path);
+                                            removeImage = false;
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    CustomButton(
+                                      text: 'Remove',
+                                      onPressed: () async {
+                                        setState(() {
+                                          imageFilename = 'none';
+                                          imageFile = null;
+                                          image = null;
+                                          removeImage = true;
+                                        });
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -230,6 +250,46 @@ class _QuizManagementState extends State<QuizManagement> {
                               controller: _choiceControllers[3],
                               hintText: 'Choice 4',
                               icon: Icons.lightbulb_outline,
+                            ),
+                            SizedBox(
+                              height: 15,
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Correct choice',
+                                  style: TextStyle(
+                                      fontFamily: 'Prompt', fontSize: 17),
+                                ),
+                                ...([0, 1, 2, 3]
+                                    .map((e) => Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Radio(
+                                              value: e,
+                                              groupValue: choiceNumber,
+                                              onChanged: (int value) {
+                                                setState(() {
+                                                  choiceNumber = value;
+                                                });
+                                              },
+                                            ),
+                                            SizedBox(
+                                              width: 10.0,
+                                            ),
+                                            Text(
+                                              'Choice ${e + 1}',
+                                              style: TextStyle(
+                                                fontFamily: "Prompt",
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ],
+                                        ))
+                                    .toList())
+                              ],
                             ),
                             Padding(
                               padding: const EdgeInsets.all(15.0),
@@ -266,6 +326,12 @@ class _QuizManagementState extends State<QuizManagement> {
                                                         .Image),
                                           );
                                           responseUrl = response.secureUrl;
+                                        } else if (removeImage) {
+                                          responseUrl = null;
+                                        } else {
+                                          responseUrl = question == null
+                                              ? null
+                                              : question.imageUrl;
                                         }
                                         Navigator.pop(
                                             context,
@@ -275,7 +341,8 @@ class _QuizManagementState extends State<QuizManagement> {
                                                 imageUrl: responseUrl,
                                                 choices: _choiceControllers
                                                     .map((e) => e.text)
-                                                    .toList()));
+                                                    .toList(),
+                                                answer: choiceNumber));
                                       }
                                     },
                                   ),
@@ -315,42 +382,71 @@ class _QuizManagementState extends State<QuizManagement> {
             body: Expanded(
               child: RefreshIndicator(
                 onRefresh: refreshQuiz,
-                child: ListView.builder(
-                  itemCount: quiz.questions.length,
-                  itemBuilder: (context, index) {
-                    QuizQuestion question = quiz.questions[index];
-                    return Padding(
+                child: Column(
+                  children: [
+                    Padding(
                       padding: const EdgeInsets.only(
-                        top: 6.0,
-                        bottom: 6.0,
+                        left: 8.0,
+                        bottom: 8.0,
                       ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.0),
-                          color: customBlue[2],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              // edit question Dialog
-                              QuizQuestion question =
-                                  await showEditQuestionDialog(context,
-                                      questionId: index);
-                              if (question != null) {
-                                setState(() {
-                                  quiz.questions[index] = question;
-                                });
-                              }
-                            },
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Quiz Topic',
+                              style:
+                                  TextStyle(fontFamily: 'Prompt', fontSize: 17),
+                            ),
+                            Expanded(
+                              child: CustomTextField(
+                                icon: null,
+                                hintText: "",
+                                controller: _topicController,
+                              ),
+                            )
+                          ]),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: quiz.questions.length,
+                        itemBuilder: (context, index) {
+                          QuizQuestion question = quiz.questions[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 6.0,
+                              bottom: 6.0,
+                            ),
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20.0),
+                                color: customBlue[2],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    4.0, 10.0, 4.0, 10.0),
-                                child: ListTile(
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () async {
+                                    // edit question Dialog
+                                    QuizQuestion question =
+                                        await showEditQuestionDialog(context,
+                                            questionId: index);
+                                    if (question != null) {
+                                      setState(() {
+                                        quiz.questions[index] = question;
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          4.0, 10.0, 4.0, 10.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ListTile(
 //                            leading: RoomIcon(
 //                              room: rooms[index],
 //                              width: 50,
@@ -378,37 +474,102 @@ class _QuizManagementState extends State<QuizManagement> {
 //                                ),
 //                              ),
 //                            ),
-                                  title: Text(
-                                    question.statement.length > 30
-                                        ? question.statement.substring(0, 30) +
-                                            "..."
-                                        : question.statement,
-                                    style: TextStyle(
-                                      fontFamily: 'Prompt',
-                                      fontSize: 18,
+                                            title: Text(
+                                              question.statement.length > 30
+                                                  ? question.statement
+                                                          .substring(0, 30) +
+                                                      "..."
+                                                  : question.statement,
+                                              style: TextStyle(
+                                                fontFamily: 'Prompt',
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              'Image: ${question.imageUrl == null ? 'None selected. Tap to add.' : 'Selected. Tap to view.'}',
+                                              style: TextStyle(
+                                                color: limeYellow,
+                                              ),
+                                            ),
+                                            trailing: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    quiz.questions
+                                                        .removeAt(index);
+                                                  });
+                                                },
+                                                child: Icon(Icons.close)),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 10.0,
+                                              right: 10.0,
+                                            ),
+                                            child: Divider(
+                                              color: customBlue[1],
+                                              thickness: 1,
+                                              height: 0,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 12.0,
+                                                top: 12.0,
+                                                bottom: 12.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Choices',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Prompt',
+                                                      fontSize: 17),
+                                                ),
+                                                SizedBox(
+                                                  height: 10,
+                                                ),
+                                                ...(question.choices
+                                                    .asMap()
+                                                    .map((i, e) => MapEntry(
+                                                        i,
+                                                        Text(
+                                                          '${i + 1}:   $e',
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'Prompt',
+                                                            fontSize: 16,
+                                                            color: question
+                                                                        .answer ==
+                                                                    i
+                                                                ? Colors.white
+                                                                : Colors.grey,
+//                                                            fontWeight:
+//                                                                question.answer ==
+//                                                                        i
+//                                                                    ? FontWeight
+//                                                                        .bold
+//                                                                    : FontWeight
+//                                                                        .normal,
+                                                          ),
+                                                        )))
+                                                    .values
+                                                    .toList())
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  subtitle: Text(
-                                    'Image: ${question.imageUrl == null ? 'none' : basename(question.imageUrl)}',
-                                    style: TextStyle(
-                                      color: limeYellow,
-                                    ),
-                                  ),
-                                  trailing: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          quiz.questions.removeAt(index);
-                                        });
-                                      },
-                                      child: Icon(Icons.close)),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -428,6 +589,7 @@ class _QuizManagementState extends State<QuizManagement> {
                   break;
                 case 1:
                   // TODO: save changes
+                  quiz.topic = _topicController.text;
                   print(quiz);
                   widget.connection.sendMessage('update_quiz', quiz);
                   refreshQuiz();

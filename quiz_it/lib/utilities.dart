@@ -84,22 +84,25 @@ class QuizQuestion {
   String statement;
   String imageUrl;
   List<String> choices;
+  int answer; // choice number {0, 1, 2, 3}
 
   QuizQuestion(
       {@required this.statement,
       @required this.imageUrl,
-      @required this.choices});
+      @required this.choices,
+      @required this.answer});
 
   factory QuizQuestion.fromJSON(Map<String, dynamic> question) {
     return QuizQuestion(
         statement: question['statement'],
         imageUrl: question['imageUrl'],
-        choices: question['choices'].cast<String>());
+        choices: question['choices'].cast<String>(),
+        answer: question['answer']);
   }
 
   @override
   String toString() {
-    return 'Statement: ${this.statement}, image: ${this.imageUrl}, choices: ${this.choices}';
+    return 'Statement: ${this.statement}, image: ${this.imageUrl}, choices: ${this.choices}, answer: ${this.answer}';
   }
 
   Map<String, dynamic> toJson() {
@@ -107,6 +110,7 @@ class QuizQuestion {
       'statement': this.statement,
       'image_url': this.imageUrl,
       'choices': this.choices,
+      'answer': this.answer,
     };
   }
 }
