@@ -14,6 +14,7 @@ import 'package:quizit/custom_widgets.dart';
  * including adding event listeners.
  */
 final WebSocketConnection connection = new WebSocketConnection();
+final serverIP = 'ws://thequizit.herokuapp.com';
 
 /* The main widget which defines the connection page that the user sees */
 class ConnectionPage extends StatefulWidget {
@@ -23,20 +24,19 @@ class ConnectionPage extends StatefulWidget {
 
 class _ConnectionPageState extends State<ConnectionPage> {
   // TODO: remove defaults
-  TextEditingController _ipController =
-      new TextEditingController(text: 'ws://10.0.2.2:8000');
-  TextEditingController _nameController =
-      new TextEditingController(text: 'manul');
+  // TextEditingController _ipController =
+  //     new TextEditingController(text: 'ws://10.0.2.2:8000');
+  TextEditingController _nameController = new TextEditingController();
 
   void connectToServer() {
-    String ip = _ipController.text;
+    // String ip = _ipController.text;
     String name = _nameController.text;
-    connection.connect(ip, (String error) {
+    connection.connect(serverIP, (String error) {
       showToast(error);
     });
     connection.addListener('status', (msg) {
       if (msg == 'failure') {
-        showToast('Unable to connect to $ip');
+        showToast('Unable to connect to server');
       }
     });
     connection.addListener('username', (msg) {
@@ -45,7 +45,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
           userId: msg['userId'],
           username: name,
         );
-        showToast('Successfully connected to $ip');
+        showToast('Successfully connected to server');
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -74,39 +74,57 @@ class _ConnectionPageState extends State<ConnectionPage> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(25.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: ListView(
+              shrinkWrap: true,
               children: [
-                Text(
-                  'Connect to Server',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Acme',
-                    fontSize: 35,
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('assets/images/logo2.png'),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text(
+                        'QuizIt',
+                        style: TextStyle(
+                          fontFamily: 'Acme',
+                          fontSize: 50.0,
+                        ),
+                      ),
+                      // Text(
+                      //   'Connect to Server',
+                      //   style: TextStyle(
+                      //     color: Colors.white,
+                      //     fontFamily: 'Acme',
+                      //     fontSize: 35,
+                      //   ),
+                      // ),
+                      // SizedBox(
+                      //   height: 20,
+                      // ),
+                      // CustomTextField(
+                      //   hintText: "Server IP",
+                      //   icon: Icons.language,
+                      //   controller: _ipController,
+                      // ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      CustomTextField(
+                        hintText: "Your Name",
+                        icon: Icons.person,
+                        controller: _nameController,
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      CustomButton(
+                        text: 'Connect',
+                        onPressed: connectToServer,
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                CustomTextField(
-                  hintText: "Server IP",
-                  icon: Icons.language,
-                  controller: _ipController,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                CustomTextField(
-                  hintText: "Your Name",
-                  icon: Icons.person,
-                  controller: _nameController,
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                CustomButton(
-                  text: 'Connect',
-                  onPressed: connectToServer,
                 ),
               ],
             ),

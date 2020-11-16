@@ -1,3 +1,8 @@
+## Introduction
+
+Quizzing is an interesting game, where several competitors play against each other by trying to give correct answers to diﬀerent questions based on different topics. It can be played both as a sport, and as an academic activity, and on a whole helps in enriching the knowledge of the player.
+In this project we try to create an android based application for quizzing - the QuizIt. QuizIt is an application that mainly targets competitive quizing, although it can as well be used for academic purposes. We try to model real world quizzes in this application, mainly by introducing room formation and quiz creation. To do this we have created a system facilitating full-duplex communication between the client and server, by using the WebSockets which is a full duplex communication protocol built over the http protocol.
+
 ## Usage
 
 1. Clone the repository.
@@ -6,17 +11,9 @@
 2. Switch to repository directory.
 `cd QuizIt`
 
-3. Install websocket npm module.
-`npm install websocket`
+3. Open 'quiz_it' folder as a flutter project in Android Studio and run the app.
 
-4. Run the server.
-`node server.js`
-
-5. Open 'quiz_it' folder as a flutter project in Android Studio and run the app.
-
-6. If running on Android Virtual Device using localhost, type in the IP 'ws://10.0.2.2:8000' and any username you wish, and click 'Connect'.
-
-7. If running on AVD using heroku, type in the IP 'ws://thequizit.herokuapp.com' and any username you wish, and click 'Connect'.
+4. Enter any username you wish, and click 'Connect'.
 
 ## Instructions
 
