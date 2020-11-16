@@ -3,6 +3,7 @@
  * visible to the other users on the network.
  */
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quizit/room_management_page.dart';
 import 'package:quizit/web_socket_connection.dart';
@@ -76,6 +77,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
             padding: const EdgeInsets.all(25.0),
             child: ListView(
               shrinkWrap: true,
+              padding: EdgeInsets.only(top: 150),
               children: [
                 Center(
                   child: Column(

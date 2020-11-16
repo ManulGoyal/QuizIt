@@ -5,6 +5,8 @@ In this project we try to create an android based application for quizzing - the
 
 ## Usage
 
+Note: An apk file is directly provided in QuizIt folder for direct installation and running.
+
 1. Clone the repository.
 `git clone https://github.com/ManulGoyal/QuizIt.git`
 
