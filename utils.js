@@ -1,4 +1,4 @@
-import {Quiz, QuizQuestion} from './quiz_utils.js';
+import {Quiz, QuizQuestion, Scoreboard} from './quiz_utils.js';
 
 export const User = class {
     constructor(username, wsConnection) {
@@ -6,6 +6,17 @@ export const User = class {
         this.username = username;
         this.wsConnection = wsConnection;
         this.room = null;
+    }
+
+    setQuizScore(score) {
+        if(this.room === null) {
+            return false;
+        }
+        if(this.room.quiz === null) {       // this cannot happen, checking just in case
+            return false;
+        }
+        this.room.quiz.scoreboard.setScore(this.userId, this.username, score);
+        return true;
     }
 }
 
@@ -68,8 +79,15 @@ export const Room = class {
         return {
             ...roomQuizless,
             quiz_topic: this.quiz.topic,
-            quiz_length: this.quiz.getNumberOfQuestions
+            quiz_length: this.quiz.getNumberOfQuestions(),
+            quiz_status: this.quiz.status
         };
+    }
+
+    hasQuizFinished() {
+        // one is subtracted because host is not playing
+        // TODO: change
+        return this.quiz.scoreboard.scoreCount() == this.participants.length;
     }
 }
 
@@ -129,13 +147,14 @@ export const Rooms = class {
     static rooms = {};
     static totalRooms = 0;
 
+    // returns quizless JSON versions of all rooms
     static getAll(privateRooms) {
         var roomsList = [];
         for(var id in this.rooms) {
             if(!privateRooms && this.rooms[id].access === 'private') {
                 continue;
             }
-            roomsList.push(this.rooms[id]);
+            roomsList.push(this.rooms[id].getQuizlessJSON());
         }
         return roomsList;
     }

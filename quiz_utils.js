@@ -1,7 +1,32 @@
+export const Scoreboard = class {
+    constructor() {
+        this.scores = {};
+    }
+
+    setScore(userId, username, score) {
+        // score = {'correct' : [], 'incorrect' : [], 'timeout' : []}
+        this.scores[userId] = {'username' : username, 'score' : score};
+    }
+
+    clearAll() {
+        this.scores = {};
+    }
+
+    isScorePresent(userId) {
+        return userId in this.scores;
+    }
+
+    scoreCount() {
+        return Object.keys(this.scores).length;
+    }
+}
+
 export const Quiz = class {
     constructor(topic) {
         this.topic = topic;         // name of topic
         this.questions = [];        // list of QuizQuestions
+        this.scoreboard = new Scoreboard();       // SCOREBOARD
+        this.status = 'idle';       // idle or running
     }
 
     addQuestion(question) {

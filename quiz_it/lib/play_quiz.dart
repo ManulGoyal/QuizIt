@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:quizit/quiz_management.dart';
+import 'package:quizit/scoreboard.dart';
 import 'package:quizit/utilities.dart';
 import 'package:quizit/web_socket_connection.dart';
 import 'package:quizit/custom_widgets.dart';
@@ -11,6 +12,10 @@ import 'package:percent_indicator/percent_indicator.dart';
 
 class PlayQuiz extends StatefulWidget {
   final WebSocketConnection connection;
+
+  // although roomId is not currently required by this widget, if the need
+  // arises, you should request for the room using roomId and implement
+  // 'update_rooms' handler
   final int roomId;
 
   PlayQuiz({@required this.connection, @required this.roomId});
@@ -22,6 +27,7 @@ class PlayQuiz extends StatefulWidget {
 class _PlayQuizState extends State<PlayQuiz> {
   Quiz quiz;
   Widget currentWidget = Container();
+  String title;
   List<int> correctAnswers = new List<int>();
   List<int> incorrectAnswers = new List<int>();
   List<int> timeouts = new List<int>();
@@ -35,6 +41,18 @@ class _PlayQuizState extends State<PlayQuiz> {
         setState(() {
           quiz = Quiz.fromJSON(msg['quiz']);
           currentWidget = getNextQuestionCounter(0);
+          title = "";
+        });
+      } else {
+        print(msg['error']);
+      }
+    });
+
+    widget.connection.addListener('end_quiz', (msg) {
+      if (msg['status'] == 'success') {
+        setState(() {
+          currentWidget = getResultsIndicator(msg['scores']);
+          title = "";
         });
       } else {
         print(msg['error']);
@@ -43,71 +61,69 @@ class _PlayQuizState extends State<PlayQuiz> {
 
     widget.connection.sendMessage('get_quiz', null);
 
-//    for (int i = 1; i <= 3; i++) {
-//      widgets.add(AnimatedQuestionCounter(
-//          child: Container(
-//            child: Text(
-//              '$i',
-//              style: TextStyle(
-//                fontFamily: 'Acme',
-//                fontSize: 50,
-//              ),
-//            ),
-//          ),
-//          slideDuration: Duration(milliseconds: 500),
-//          stayDuration: Duration(seconds: 2),
-//          onEnd: () {
-//            setState(() {
-//              current += 1;
-//            });
-//          }));
-//    }
-//    setState(() {
-//      current += 1;
-//    });
-
-//    widgets.add(AnimatedQuestionCounter(
-//        key: UniqueKey(),
-//        child: Container(
-//          child: Text(
-//            '1',
-//            style: TextStyle(
-//              fontFamily: 'Acme',
-//              fontSize: 50,
-//            ),
-//          ),
-//        ),
-//        slideDuration: Duration(milliseconds: 500),
-//        stayDuration: Duration(seconds: 2),
-//        onEnd: () {
-//          widgets.add(AnimatedQuestionCounter(
-//              key: UniqueKey(),
-//              child: Container(
-//                child: Text(
-//                  '2',
-//                  style: TextStyle(
-//                    fontFamily: 'Acme',
-//                    fontSize: 50,
-//                  ),
-//                ),
-//              ),
-//              slideDuration: Duration(milliseconds: 500),
-//              stayDuration: Duration(seconds: 2),
-//              onEnd: () {}));
-//          setState(() {
-//            current += 1;
-//          });
-//        }));
-//    setState(() {
-//      current += 1;
-//    });
-
     super.initState();
   }
 
+  Widget getResultsIndicator(Map<String, dynamic> scores) {
+    return AnimatedQuestionCounter(
+        key: UniqueKey(),
+        child: Container(
+          child: Text(
+            'Time for Results!',
+            style: TextStyle(
+              fontFamily: 'Acme',
+              fontSize: 50,
+            ),
+          ),
+        ),
+        slideDuration: Duration(milliseconds: 500),
+        stayDuration: Duration(seconds: 2),
+        onEnd: () {
+          setState(() {
+            currentWidget = Scoreboard(
+                connection: widget.connection,
+                roomId: widget.roomId,
+                scores: scores);
+            title = "Scoreboard";
+          });
+        });
+  }
+
   Widget getNextQuestionCounter(int i) {
+    if (i >= quiz.questions.length) {
+      // user has finished the quiz, send his scores to server
+      widget.connection.sendMessage('end_quiz', {
+        'correct': correctAnswers,
+        'incorrect': incorrectAnswers,
+        'timeout': timeouts
+      });
+      print('SENTT');
+    }
     return i >= quiz.questions.length
-        ? Container()
+        ? Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 12.0,
+                right: 12.0,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Text(
+                      'Waiting for others to finish the quiz. Stay tuned for the results!',
+                      style: TextStyle(fontFamily: 'Acme', fontSize: 30.0),
+                    ),
+                  ),
+                  SizedBox(height: 15.0),
+                  CircularProgressIndicator(
+                    value: null,
+                  )
+                ],
+              ),
+            ),
+          )
         : AnimatedQuestionCounter(
             key: UniqueKey(),
             child: Container(
@@ -124,6 +140,7 @@ class _PlayQuizState extends State<PlayQuiz> {
             onEnd: () {
               setState(() {
                 currentWidget = getNextQuestionDisplay(i);
+                title = quiz.topic;
               });
             });
   }
@@ -143,6 +160,7 @@ class _PlayQuizState extends State<PlayQuiz> {
         }
         setState(() {
           currentWidget = getNextResultDisplay(i, result);
+          title = "";
         });
       },
     );
@@ -165,6 +183,7 @@ class _PlayQuizState extends State<PlayQuiz> {
         onEnd: () {
           setState(() {
             currentWidget = getNextQuestionCounter(i + 1);
+            title = "";
           });
         });
   }
@@ -173,7 +192,7 @@ class _PlayQuizState extends State<PlayQuiz> {
   Widget build(BuildContext context) {
     return CustomScaffold(
       title: Text(
-        quiz == null ? "" : quiz.topic,
+        quiz == null ? "" : title,
         style: TextStyle(fontFamily: 'Acme', fontSize: 30),
       ),
       body: quiz == null

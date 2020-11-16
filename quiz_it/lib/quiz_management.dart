@@ -391,79 +391,141 @@ class _QuizManagementState extends State<QuizManagement> {
   Widget build(BuildContext context) {
     return quiz == null
         ? Container()
-        : CustomScaffold(
-            title: Text(
-              'Edit Quiz',
-              style: TextStyle(fontFamily: 'Acme', fontSize: 30),
-            ),
-            body: Expanded(
-              child: RefreshIndicator(
-                onRefresh: refreshQuiz,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 8.0,
-                        bottom: 8.0,
+        : WillPopScope(
+            onWillPop: () async {
+              return await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return Dialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0)),
+                      child: Container(
+                        decoration: BoxDecoration(
+//                    gradient: LinearGradient(
+//                        colors: [Color(0xFF2B3443), Color(0xFF5C677B)]),
+                          color: customBlue[1],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        height: 190,
+                        child: Padding(
+                          padding: const EdgeInsets.all(30.0),
+                          child: Column(
+                            children: [
+                              Center(
+                                child: Text(
+                                  'Do you want to save your changes?',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'Prompt',
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  CustomButton(
+                                    text: 'Yes',
+                                    onPressed: () {
+                                      quiz.topic = _topicController.text;
+                                      widget.connection
+                                          .sendMessage('update_quiz', quiz);
+                                      Navigator.pop(context, true);
+                                    },
+                                  ),
+                                  CustomButton(
+                                    text: 'No',
+                                    onPressed: () {
+                                      Navigator.pop(context, true);
+                                    },
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Quiz Topic',
-                              style:
-                                  TextStyle(fontFamily: 'Prompt', fontSize: 17),
-                            ),
-                            Expanded(
-                              child: CustomTextField(
-                                icon: null,
-                                hintText: "",
-                                controller: _topicController,
+                    );
+                  });
+            },
+            child: CustomScaffold(
+              title: Text(
+                'Edit Quiz',
+                style: TextStyle(fontFamily: 'Acme', fontSize: 30),
+              ),
+              body: Expanded(
+                child: RefreshIndicator(
+                  onRefresh: refreshQuiz,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 8.0,
+                          bottom: 8.0,
+                        ),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Quiz Topic',
+                                style: TextStyle(
+                                    fontFamily: 'Prompt', fontSize: 17),
                               ),
-                            )
-                          ]),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: quiz.questions.length,
-                        itemBuilder: (context, index) {
-                          QuizQuestion question = quiz.questions[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              top: 6.0,
-                              bottom: 6.0,
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.0),
-                                color: customBlue[2],
+                              Expanded(
+                                child: CustomTextField(
+                                  icon: null,
+                                  hintText: "",
+                                  controller: _topicController,
+                                ),
+                              )
+                            ]),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: quiz.questions.length,
+                          itemBuilder: (context, index) {
+                            QuizQuestion question = quiz.questions[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                top: 6.0,
+                                bottom: 6.0,
                               ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () async {
-                                    // edit question Dialog
-                                    QuizQuestion question =
-                                        await showEditQuestionDialog(context,
-                                            questionId: index);
-                                    if (question != null) {
-                                      setState(() {
-                                        quiz.questions[index] = question;
-                                      });
-                                    }
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          4.0, 10.0, 4.0, 10.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ListTile(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  color: customBlue[2],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      // edit question Dialog
+                                      QuizQuestion question =
+                                          await showEditQuestionDialog(context,
+                                              questionId: index);
+                                      if (question != null) {
+                                        setState(() {
+                                          quiz.questions[index] = question;
+                                        });
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            4.0, 10.0, 4.0, 10.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            ListTile(
 //                            leading: RoomIcon(
 //                              room: rooms[index],
 //                              width: 50,
@@ -491,94 +553,95 @@ class _QuizManagementState extends State<QuizManagement> {
 //                                ),
 //                              ),
 //                            ),
-                                            title: Text(
-                                              question.statement.length > 30
-                                                  ? question.statement
-                                                          .substring(0, 30) +
-                                                      "..."
-                                                  : question.statement,
-                                              style: TextStyle(
-                                                fontFamily: 'Prompt',
-                                                fontSize: 18,
+                                              title: Text(
+                                                question.statement.length > 30
+                                                    ? question.statement
+                                                            .substring(0, 30) +
+                                                        "..."
+                                                    : question.statement,
+                                                style: TextStyle(
+                                                  fontFamily: 'Prompt',
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                'Image: ${question.imageUrl == null ? 'None selected. Tap to add.' : 'Selected. Tap to view.'}',
+                                                style: TextStyle(
+                                                  color: limeYellow,
+                                                ),
+                                              ),
+                                              trailing: GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      quiz.questions
+                                                          .removeAt(index);
+                                                    });
+                                                  },
+                                                  child: Icon(Icons.close)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 10.0,
+                                                right: 10.0,
+                                              ),
+                                              child: Divider(
+                                                color: customBlue[1],
+                                                thickness: 1,
+                                                height: 0,
                                               ),
                                             ),
-                                            subtitle: Text(
-                                              'Image: ${question.imageUrl == null ? 'None selected. Tap to add.' : 'Selected. Tap to view.'}',
-                                              style: TextStyle(
-                                                color: limeYellow,
-                                              ),
-                                            ),
-                                            trailing: GestureDetector(
-                                                onTap: () {
-                                                  setState(() {
-                                                    quiz.questions
-                                                        .removeAt(index);
-                                                  });
-                                                },
-                                                child: Icon(Icons.close)),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 10.0,
-                                              right: 10.0,
-                                            ),
-                                            child: Divider(
-                                              color: customBlue[1],
-                                              thickness: 1,
-                                              height: 0,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 12.0,
-                                                right: 12.0,
-                                                top: 12.0,
-                                                bottom: 12.0),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      'Choices',
-                                                      style: TextStyle(
-                                                          fontFamily: 'Prompt',
-                                                          fontSize: 17),
-                                                    ),
-                                                    Text(
-                                                      'Allotted Time: ${question.timer} s',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Prompt',
-                                                        fontSize: 15,
-                                                        color: Colors.grey,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                ...(question.choices
-                                                    .asMap()
-                                                    .map((i, e) => MapEntry(
-                                                        i,
-                                                        Text(
-                                                          '${i + 1}:   $e',
-                                                          style: TextStyle(
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 12.0,
+                                                  right: 12.0,
+                                                  top: 12.0,
+                                                  bottom: 12.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        'Choices',
+                                                        style: TextStyle(
                                                             fontFamily:
                                                                 'Prompt',
-                                                            fontSize: 16,
-                                                            color: question
-                                                                        .answer ==
-                                                                    i
-                                                                ? Colors.white
-                                                                : Colors.grey,
+                                                            fontSize: 17),
+                                                      ),
+                                                      Text(
+                                                        'Allotted Time: ${question.timer} s',
+                                                        style: TextStyle(
+                                                          fontFamily: 'Prompt',
+                                                          fontSize: 15,
+                                                          color: Colors.grey,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  ...(question.choices
+                                                      .asMap()
+                                                      .map((i, e) => MapEntry(
+                                                          i,
+                                                          Text(
+                                                            '${i + 1}:   $e',
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'Prompt',
+                                                              fontSize: 16,
+                                                              color: question
+                                                                          .answer ==
+                                                                      i
+                                                                  ? Colors.white
+                                                                  : Colors.grey,
 //                                                            fontWeight:
 //                                                                question.answer ==
 //                                                                        i
@@ -586,51 +649,52 @@ class _QuizManagementState extends State<QuizManagement> {
 //                                                                        .bold
 //                                                                    : FontWeight
 //                                                                        .normal,
-                                                          ),
-                                                        )))
-                                                    .values
-                                                    .toList())
-                                              ],
+                                                            ),
+                                                          )))
+                                                      .values
+                                                      .toList())
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+              fab: true,
+              choices: widget.choices,
+              onSelected: (choice) async {
+                switch (choice.choiceId) {
+                  case 0:
+                    QuizQuestion question =
+                        await showEditQuestionDialog(context, questionId: null);
+                    if (question != null) {
+                      setState(() {
+                        quiz.questions.add(question);
+                      });
+                    }
+                    //            refreshRoomList();
+                    break;
+                  case 1:
+                    // TODO: save changes
+                    quiz.topic = _topicController.text;
+                    print(quiz);
+                    widget.connection.sendMessage('update_quiz', quiz);
+                    refreshQuiz();
+                    break;
+                }
+              },
             ),
-            fab: true,
-            choices: widget.choices,
-            onSelected: (choice) async {
-              switch (choice.choiceId) {
-                case 0:
-                  QuizQuestion question =
-                      await showEditQuestionDialog(context, questionId: null);
-                  if (question != null) {
-                    setState(() {
-                      quiz.questions.add(question);
-                    });
-                  }
-                  //            refreshRoomList();
-                  break;
-                case 1:
-                  // TODO: save changes
-                  quiz.topic = _topicController.text;
-                  print(quiz);
-                  widget.connection.sendMessage('update_quiz', quiz);
-                  refreshQuiz();
-                  break;
-              }
-            },
           );
   }
 }

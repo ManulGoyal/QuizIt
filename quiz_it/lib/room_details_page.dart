@@ -33,9 +33,12 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
 
   @override
   void initState() {
+    print('reeee');
+    print(room);
     widget.connection.addListener('get_room_by_id', (msg) {
       if (msg['status'] == 'success') {
         Room retrievedRoom = Room.fromJSON(msg['room']);
+        print(retrievedRoom);
         if (retrievedRoom.participants
             .contains(widget.connection.user.userId)) {
           List<User> retrievedParticipants = msg['participants']
@@ -145,6 +148,8 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    print(room);
+    print(widget.connection);
     return room == null
         ? Container()
         : WillPopScope(
@@ -250,6 +255,33 @@ class _RoomDetailsPageState extends State<RoomDetailsPage> {
                                     width: 50,
                                     height: 50,
                                     fontSize: 30,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 10.0, left: 15.0, right: 15.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Quiz Topic: ${room.quizTopic}',
+                                        style: TextStyle(
+                                          fontFamily: 'Prompt',
+                                          fontSize: 15.0,
+                                          color: limeYellow,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${room.quizLength} questions',
+                                        style: TextStyle(
+                                          fontFamily: 'Prompt',
+                                          fontSize: 13.0,
+                                          color: Colors.grey,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 Padding(

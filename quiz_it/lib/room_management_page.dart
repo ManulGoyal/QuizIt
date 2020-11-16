@@ -398,6 +398,26 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                 color: limeYellow,
                               ),
                             ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Topic: ${rooms[index].quizTopic}',
+                                  style: TextStyle(
+                                    fontFamily: 'Prompt',
+                                    fontSize: 15.0,
+                                  ),
+                                ),
+                                Text(
+                                  '${rooms[index].quizLength} questions',
+                                  style: TextStyle(
+                                    fontFamily: 'Prompt',
+                                    fontSize: 15.0,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

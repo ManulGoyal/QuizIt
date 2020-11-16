@@ -4,6 +4,7 @@ var WebSocketServer = require('websocket').server;
 var http = require('http');
 import {User, Room, Users, Rooms, WebSocketConnection, randomString} from './utils.js';
 import {Quiz, QuizQuestion} from './quiz_utils.js';
+import { isError } from "util";
 
 // Rooms.addRoom(new Room('room1', 'fn9f', 'private', 9, 0, [0, 1, 2]));
 // Rooms.addRoom(new Room('room2', 'dlkn8', 'public', 8, 1, [3, 4]));
@@ -140,7 +141,7 @@ wsServer.on('request', function(request) {
     // console.log(room);
     // console.log(room.getParticipants());
     if(room) {
-      wsConnection.sendMessage('get_room_by_code', {status: 'success', room: room});
+      wsConnection.sendMessage('get_room_by_code', {status: 'success', room: room.getQuizlessJSON()});
     } else {
       wsConnection.sendMessage('get_room_by_code', {status: 'failure', error: 'Room with given code doesn\'t exist'});
     }
@@ -170,16 +171,41 @@ wsServer.on('request', function(request) {
 
   wsConnection.addListener('start_quiz', function (message) {
     if(user.room) {
-      if(user.room.host == user.userId) {
+      if(user.room.quiz.status !== 'idle') {
+        wsConnection.sendMessage('start_quiz', {status: 'failure', error: 'Quiz is already running'});
+      } else if(user.room.host == user.userId) {
+        user.room.quiz.status = 'running';
         user.room.participants.forEach(participantId => {
           var participant = Users.getById(participantId);
           participant.wsConnection.sendMessage('start_quiz', {status: 'success'});
         });
+        Users.broadcastMessage('update_rooms', null);
       } else {
         wsConnection.sendMessage('start_quiz', {status: 'failure', error: 'User is not host'});
       }
     } else {
       wsConnection.sendMessage('start_quiz', {status: 'failure', error: 'User is not in any room'});
+    }
+  });
+
+  wsConnection.addListener('end_quiz', function (message) {
+    // this message from a client signifies that his quiz has ended
+    // message = {'correct': [..], 'incorrect': [..], 'timeout': [..]}
+    console.log(message);
+    if(user.room.quiz.status !== 'running') {
+      wsConnection.sendMessage('end_quiz', {status: 'failure', error: 'Quiz is not running'});
+    } else if(user.setQuizScore(message)) {
+      console.log(user.room.quiz.scoreboard.scores);
+      if(user.room.hasQuizFinished()) {
+        user.room.quiz.status = 'idle';
+        user.room.participants.forEach(participantId => {
+          var participant = Users.getById(participantId);
+          participant.wsConnection.sendMessage('end_quiz', {status: 'success', scores: user.room.quiz.scoreboard.scores});
+        });
+        Users.broadcastMessage('update_rooms', null);
+      }
+    } else {
+      wsConnection.sendMessage('end_quiz', {status: 'failure', error: 'User not in any room'});
     }
   });
 

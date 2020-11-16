@@ -43,4 +43,8 @@ class WebSocketConnection {
   void sendMessage(String type, dynamic message) {
     channel?.sink?.add(jsonEncode({'type': type, 'message': message}));
   }
+
+  void clearListeners() {
+    eventListener.clear();
+  }
 }

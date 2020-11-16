@@ -8,6 +8,7 @@ import 'package:quizit/room_management_page.dart';
 import 'package:quizit/connection_page.dart';
 import 'package:quizit/play_quiz.dart';
 import 'package:quizit/web_socket_connection.dart';
+import 'package:quizit/scoreboard.dart';
 import 'question_display.dart';
 import 'utilities.dart';
 

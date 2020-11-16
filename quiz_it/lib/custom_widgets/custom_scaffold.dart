@@ -98,6 +98,5 @@ class CustomScaffold extends StatelessWidget {
 //        },
 //      ),
     );
-    ;
   }
 }

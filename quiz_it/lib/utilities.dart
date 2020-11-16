@@ -52,6 +52,7 @@ class Room {
   List<int> participants;
   String quizTopic;
   int quizLength;
+  String quizStatus;
 
   Room(
       {@required this.id,
@@ -62,7 +63,8 @@ class Room {
       @required this.host,
       @required this.participants,
       @required this.quizTopic,
-      @required this.quizLength});
+      @required this.quizLength,
+      @required this.quizStatus});
 
   factory Room.fromJSON(Map<String, dynamic> room) {
     return Room(
@@ -76,7 +78,8 @@ class Room {
         host: room['host'],
         participants: room['participants'].cast<int>(),
         quizTopic: room['quiz_topic'],
-        quizLength: room['quiz_length']);
+        quizLength: room['quiz_length'],
+        quizStatus: room['quiz_status']);
   }
 }
 

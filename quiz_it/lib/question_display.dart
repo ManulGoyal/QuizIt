@@ -78,7 +78,9 @@ class _QuestionDisplayState extends State<QuestionDisplay>
 
   @override
   void dispose() {
+    print('I am disposiing');
     _timerAnimationController.stop();
+    _choicesAnimationController.stop();
     super.dispose();
   }
 
